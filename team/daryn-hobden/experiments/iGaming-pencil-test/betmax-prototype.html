@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>BetMax — Prototype</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      background: #0a0a0f;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    .phone-frame {
+      width: 375px;
+      height: 812px;
+      background: #111318;
+      position: relative;
+      overflow: hidden;
+      border-radius: 44px;
+      box-shadow: 0 0 0 2px #2a3142, 0 40px 100px rgba(0,0,0,0.9);
+    }
+
+    /* Screens */
+    .screen {
+      display: none;
+      width: 375px;
+      height: 812px;
+      background: #111318;
+      flex-direction: column;
+      position: absolute;
+      top: 0; left: 0;
+      overflow: hidden;
+    }
+    .screen.active { display: flex; animation: slideIn 0.28s ease; }
+    .screen.back { animation: slideBack 0.28s ease; }
+    @keyframes slideIn  { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes slideBack { from { opacity: 0; transform: translateX(-32px); } to { opacity: 1; transform: translateX(0); } }
+
+    /* Status bar */
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 28px 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: #F8FAFC;
+      flex-shrink: 0;
+    }
+
+    /* Progress dots */
+    .progress-dots {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      padding: 14px 0 0;
+      flex-shrink: 0;
+    }
+    .dot { width: 28px; height: 4px; background: #2a3142; border-radius: 2px; }
+    .dot.active { background: #4ADE80; }
+    .dot.done   { background: #4ADE8066; }
+
+    /* Tour progress bar */
+    .tour-progress {
+      height: 3px;
+      background: #2a3142;
+      margin: 10px 24px 0;
+      border-radius: 2px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .tour-progress-fill { height: 100%; background: #4ADE80; border-radius: 2px; }
+
+    /* Scrollable content */
+    .content {
+      padding: 0 24px;
+      flex: 1;
+      overflow-y: auto;
+    }
+    .content-inner { padding: 20px 0 8px; }
+
+    /* Back button */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      background: #1C1F2A;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 18px;
+      color: #F8FAFC;
+      margin-bottom: 20px;
+    }
+
+    h1 { font-size: 26px; font-weight: 700; color: #F8FAFC; margin-bottom: 8px; line-height: 1.2; }
+    .subtitle { font-size: 14px; color: #E8EDF5; margin-bottom: 24px; line-height: 1.5; }
+
+    /* Inputs */
+    .input {
+      width: 100%;
+      background: #1C1F2A;
+      border: 1px solid #2a3142;
+      border-radius: 10px;
+      padding: 14px 16px;
+      color: #94A3B8;
+      font-size: 14px;
+      margin-bottom: 12px;
+      outline: none;
+      display: block;
+      font-family: inherit;
+    }
+    .input::placeholder { color: #64748B; }
+    .input:focus { border-color: #4ADE8066; color: #F8FAFC; }
+
+    select.input {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      cursor: pointer;
+    }
+
+    /* Checkbox */
+    .checkbox-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .checkbox {
+      width: 20px; height: 20px;
+      border: 2px solid #8897B8;
+      border-radius: 5px;
+      background: transparent;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+      transition: all 0.15s;
+    }
+    .checkbox.checked { background: #4ADE80; border-color: #4ADE80; }
+    .checkbox.checked::after { content: '✓'; font-size: 12px; color: #0A2014; font-weight: 700; }
+    .checkbox-label { font-size: 13px; color: #94A3B8; line-height: 1.5; }
+    .checkbox-label a { color: #4ADE80; text-decoration: none; }
+
+    /* Buttons */
+    .btn-primary {
+      width: 100%;
+      background: #4ADE80;
+      color: #0A2014;
+      border: none;
+      border-radius: 12px;
+      padding: 17px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 12px;
+      font-family: inherit;
+      transition: opacity 0.15s;
+    }
+    .btn-primary:active { opacity: 0.85; }
+
+    .btn-outline {
+      width: 100%;
+      background: transparent;
+      color: #F8FAFC;
+      border: 1.5px solid #8897B8;
+      border-radius: 12px;
+      padding: 17px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 12px;
+      font-family: inherit;
+    }
+
+    .btn-ghost {
+      background: none; border: none;
+      color: #64748B; font-size: 14px;
+      cursor: pointer; width: 100%;
+      text-align: center; padding: 10px;
+      font-family: inherit;
+    }
+
+    /* Bottom actions */
+    .bottom-actions {
+      padding: 12px 24px 36px;
+      flex-shrink: 0;
+    }
+
+    /* Info banner */
+    .info-banner {
+      background: #1E2330;
+      border: 1px solid #60A5FA44;
+      border-left: 3px solid #60A5FA;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: #60A5FA;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    /* Upload card */
+    .upload-card {
+      background: #1C1F2A;
+      border: 1.5px dashed #2a3142;
+      border-radius: 14px;
+      padding: 28px 24px;
+      text-align: center;
+      margin-bottom: 14px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .upload-card:hover { border-color: #4ADE8066; }
+    .upload-card .upload-label { font-size: 11px; color: #64748B; letter-spacing: 0.12em; margin-bottom: 6px; }
+    .upload-card .upload-title { font-size: 16px; font-weight: 600; color: #F8FAFC; margin-bottom: 4px; }
+    .upload-card .upload-sub { font-size: 13px; color: #E8EDF5; }
+
+    /* Toggle */
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding: 12px 0;
+    }
+    .toggle-info .toggle-title { font-size: 15px; font-weight: 500; color: #F8FAFC; margin-bottom: 2px; }
+    .toggle-info .toggle-sub { font-size: 13px; color: #E8EDF5; }
+    .toggle {
+      width: 48px; height: 28px;
+      background: #4ADE80;
+      border-radius: 14px;
+      position: relative;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 22px; height: 22px;
+      background: white;
+      border-radius: 50%;
+      top: 3px; right: 3px;
+      transition: right 0.2s, left 0.2s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .toggle.off { background: #2a3142; }
+    .toggle.off::after { right: auto; left: 3px; }
+
+    /* Review table */
+    .review-table {
+      background: #1C1F2A;
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .review-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 13px 16px;
+      border-bottom: 1px solid #2a3142;
+    }
+    .review-row:last-child { border-bottom: none; }
+    .review-key { font-size: 14px; color: #64748B; }
+    .review-val { font-size: 14px; color: #F8FAFC; font-weight: 500; }
+
+    /* OTP */
+    .otp-row { display: flex; gap: 8px; justify-content: center; margin: 24px 0 16px; }
+    .otp-box {
+      width: 44px; height: 52px;
+      background: #1C1F2A;
+      border: 1.5px solid #2a3142;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 22px; font-weight: 700;
+      color: #F8FAFC;
+      outline: none;
+      font-family: inherit;
+    }
+    .otp-box:focus { border-color: #4ADE80; }
+
+    /* Icon box */
+    .icon-box {
+      width: 64px; height: 64px;
+      background: #1C1F2A;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      margin-bottom: 28px;
+    }
+
+    /* Tour content */
+    .tour-content {
+      flex: 1;
+      padding: 36px 24px 0;
+      overflow-y: auto;
+    }
+    .tour-tip {
+      background: #1E2330;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: #94A3B8;
+      margin-top: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.6;
+    }
+    .tour-tip-icon { color: #60A5FA; flex-shrink: 0; }
+
+    /* Splash */
+    .splash-center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 32px;
+      text-align: center;
+    }
+    .splash-logo {
+      width: 72px; height: 72px;
+      background: #F8FAFC;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      font-weight: 800;
+      color: #111318;
+      margin-bottom: 36px;
+      box-shadow: 0 8px 32px rgba(74,222,128,0.2);
+    }
+    .splash-center h1 { margin-bottom: 12px; }
+
+    /* Verify email */
+    .email-icon-wrap { display: flex; justify-content: center; padding: 48px 0 28px; }
+    .email-icon {
+      width: 80px; height: 80px;
+      background: #1C1F2A;
+      border-radius: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+    }
+
+    /* Homepage */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px 8px;
+      flex-shrink: 0;
+    }
+    .header-title { font-size: 17px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.3px; }
+    .header-icon {
+      width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; color: #F8FAFC;
+      cursor: pointer; background: none; border: none; border-radius: 10px;
+    }
+    .header-icon:active { background: #1C1F2A; }
+
+    .homepage-scroll { flex: 1; overflow-y: auto; padding-bottom: 24px; }
+
+    .greeting-section { padding: 8px 20px 20px; }
+    .greeting-title { font-size: 22px; font-weight: 700; color: #F8FAFC; margin-bottom: 4px; }
+    .greeting-sub { font-size: 14px; color: #E8EDF5; }
+
+    .section-label {
+      font-size: 12px; font-weight: 700;
+      color: #64748B;
+      padding: 0 20px 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* Homepage cards */
+    .home-card {
+      margin: 0 20px 20px;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      height: 150px;
+      position: relative;
+    }
+    .card-sports    { background: linear-gradient(135deg, #162216 0%, #1a2e1a 100%); }
+    .card-casino    { background: linear-gradient(135deg, #16162a 0%, #1a1028 100%); }
+    .card-promo     { background: linear-gradient(135deg, #221610 0%, #1a1620 100%); }
+
+    .card-glow-sports  { box-shadow: 0 4px 24px rgba(74,222,128,0.12); }
+    .card-glow-casino  { box-shadow: 0 4px 24px rgba(167,139,250,0.12); }
+    .card-glow-promo   { box-shadow: 0 4px 24px rgba(251,191,36,0.12); }
+
+    .home-card-inner {
+      position: absolute; inset: 0;
+      padding: 20px 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%);
+    }
+    .home-card-icon { font-size: 28px; margin-bottom: 6px; }
+    .home-card-title { font-size: 17px; font-weight: 700; color: #F8FAFC; margin-bottom: 2px; }
+    .home-card-sub { font-size: 12px; color: #94A3B8; margin-bottom: 10px; }
+    .home-card-cta {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 13px; font-weight: 600;
+      color: #F8FAFC;
+      width: fit-content;
+    }
+
+    /* Nav panel */
+    .nav-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0);
+      z-index: 100;
+      display: none;
+      transition: background 0.3s;
+    }
+    .nav-overlay.open { display: block; background: rgba(0,0,0,0.6); }
+
+    .nav-panel {
+      position: absolute;
+      top: 0; left: 0;
+      width: 290px; height: 100%;
+      background: #1C1F2A;
+      z-index: 101;
+      transform: translateX(-100%);
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      display: flex; flex-direction: column;
+      border-right: 1px solid #2a3142;
+    }
+    .nav-panel.open { transform: translateX(0); }
+
+    .nav-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 56px 20px 18px;
+      border-bottom: 1px solid #2a3142;
+    }
+    .nav-brand { font-size: 22px; font-weight: 800; color: #F8FAFC; }
+    .nav-close {
+      width: 32px; height: 32px;
+      background: #2a3142; border: none;
+      border-radius: 8px;
+      font-size: 16px; color: #94A3B8;
+      cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+    }
+    .nav-items { flex: 1; padding: 10px 10px 0; }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 14px;
+      font-size: 15px; font-weight: 500;
+      color: #94A3B8;
+      cursor: pointer;
+      border-radius: 10px;
+      margin-bottom: 2px;
+      transition: background 0.15s;
+    }
+    .nav-item:hover { background: #ffffff08; }
+    .nav-item.active { background: #60A5FA18; color: #60A5FA; }
+    .nav-item-icon { font-size: 18px; width: 26px; text-align: center; }
+
+    .nav-footer {
+      padding: 14px 20px 48px;
+      border-top: 1px solid #2a3142;
+    }
+    .nav-footer-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: #64748B;
+      padding: 10px 4px;
+      cursor: pointer;
+    }
+
+    /* Footer links */
+    .footer-link {
+      text-align: center;
+      font-size: 13px;
+      color: #64748B;
+      padding: 6px 0;
+    }
+    .footer-link span, .footer-link a {
+      color: #4ADE80; cursor: pointer; text-decoration: none;
+    }
+
+    /* My Account screen */
+    .account-scroll { flex: 1; overflow-y: auto; padding-bottom: 32px; }
+
+    .account-hero {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 20px 24px;
+      border-bottom: 1px solid #2a3142;
+    }
+    .account-avatar {
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, #4ADE80 0%, #22c55e 100%);
+      border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 800; color: #0A2014;
+      flex-shrink: 0;
+    }
+    .account-hero-name { font-size: 18px; font-weight: 700; color: #F8FAFC; margin-bottom: 3px; }
+    .account-hero-email { font-size: 13px; color: #64748B; }
+    .account-hero-badge {
+      margin-left: auto;
+      background: #4ADE8020;
+      border: 1px solid #4ADE8040;
+      color: #4ADE80;
+      font-size: 11px; font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.04em;
+    }
+
+    .account-section-label {
+      font-size: 11px; font-weight: 700;
+      color: #64748B;
+      padding: 20px 20px 8px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .account-menu {
+      background: #1C1F2A;
+      border-radius: 14px;
+      margin: 0 16px 4px;
+      overflow: hidden;
+    }
+    .account-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 15px 16px;
+      border-bottom: 1px solid #2a3142;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .account-menu-item:last-child { border-bottom: none; }
+    .account-menu-item:active { background: #ffffff06; }
+    .account-menu-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; flex-shrink: 0;
+    }
+    .icon-green  { background: #4ADE8018; }
+    .icon-blue   { background: #60A5FA18; }
+    .icon-purple { background: #A78BFA18; }
+    .icon-amber  { background: #FBBF2418; }
+    .icon-red    { background: #F8717118; }
+    .icon-grey   { background: #94A3B818; }
+    .account-menu-text { flex: 1; }
+    .account-menu-title { font-size: 15px; font-weight: 500; color: #F8FAFC; margin-bottom: 2px; }
+    .account-menu-sub { font-size: 12px; color: #64748B; }
+    .account-menu-arrow { font-size: 16px; color: #64748B; }
+    .account-menu-tag {
+      font-size: 11px; font-weight: 600;
+      background: #4ADE8020; color: #4ADE80;
+      border-radius: 6px; padding: 2px 8px;
+    }
+    .account-signout {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 20px 16px 0;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1.5px solid #2a3142;
+      font-size: 15px; font-weight: 600; color: #F87171;
+      cursor: pointer;
+      background: none;
+      font-family: inherit;
+      width: calc(100% - 32px);
+      transition: background 0.15s;
+    }
+    .account-signout:active { background: #F8717110; }
+
+    /* Prototype label */
+    .proto-label {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.4);
+      font-size: 11px;
+      padding: 6px 16px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      white-space: nowrap;
+      z-index: 9999;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      pointer-events: none;
+    }
+
+    /* Tour background overlay */
+    .bg-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 0;
+      pointer-events: none;
+    }
+    .screen-fg {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      width: 100%;
+      min-height: 0;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2a3142; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<div class="phone-frame">
+
+  <!-- ═══════════════════════════════ SPLASH ═══════════════════════════════ -->
+  <div id="splash" class="screen active">
+    <div class="status-bar"><span>9:41</span><span>▌▌ ■■ ▮</span></div>
+    <div class="splash-center">
+      <div class="splash-logo">D</div>
+      <h1>Welcome back</h1>
+      <p class="subtitle" style="margin-bottom:0">Enter your details to sign in or create a new account to get started.</p>
+    </div>
+    <div class="bottom-actions">
+      <button class="btn-primary" onclick="go('create-account')">Create Account</button>
+      <button class="btn-outline" onclick="go('create-account')">Sign In</button>
+      <button class="btn-ghost">Continue as guest</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ 01 CREATE ACCOUNT ═══════════════════════ -->
+  <div id="create-account" class="screen">
+    <div class="status-bar"><span></span><span>▌▌ ■■</span></div>
+    <div class="progress-dots">
+      <div class="dot active"></div><div class="dot"></div><div class="dot"></div>
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+    <div class="content">
+      <div class="content-inner">
+        <h1>Create Account</h1>
+        <p class="subtitle">Join and play responsibly today</p>
+        <input class="input" type="email" placeholder="Email address">
+        <input class="input" type="password" placeholder="Password">
+        <input class="input" type="password" placeholder="Confirm password">
+        <div class="checkbox-row">
+          <div class="checkbox" onclick="this.classList.toggle('checked')"></div>
+          <span class="checkbox-label">I agree to the <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a></span>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-actions">
+      <button class="btn-primary" onclick="go('personal-details')">Continue</button>
+      <div class="footer-link">Already have an account? <span onclick="go('splash')">Sign in</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ 02 PERSONAL DETAILS ══════════════════════ -->
+  <div id="personal-details" class="screen">
+    <div class="status-bar"><span></span><span>▌▌ ■■</span></div>
+    <div class="progress-dots">
+      <div class="dot done"></div><div class="dot active"></div><div class="dot"></div>
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+    <div class="content">
+      <div class="content-inner">
+        <h1>Personal Details</h1>
+        <p class="subtitle">Tell us a little about yourself</p>
+        <input class="input" type="text" placeholder="First name">
+        <input class="input" type="text" placeholder="Last name">
+        <input class="input" type="date" placeholder="Date of birth">
+        <select class="input">
+          <option value="" disabled selected>Select gender</option>
+          <option>Male</option><option>Female</option>
+          <option>Non-binary</option><option>Prefer not to say</option>
+        </select>
+      </div>
+    </div>
+    <div class="bottom-actions">
+      <button class="btn-primary" onclick="go('contact-details')">Continue</button>
+      <button class="btn-outline" onclick="goBack('create-account')">Back</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ 03 CONTACT DETAILS ══════════════════════ -->
+  <div id="contact-details" class="screen">
+    <div class="status-bar"><span></span><span>▌▌ ■■</span></div>
+    <div class="progress-dots">
+      <div class="dot done"></div><div class="dot done"></div><div class="dot active"></div>
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+    <div class="content">
+      <div class="content-inner">
+        <h1>Contact Details</h1>
+        <p class="subtitle">We need your contact information</p>
+        <input class="input" type="tel" placeholder="Mobile number">
+        <input class="input" type="text" placeholder="Address line 1">
+        <input class="input" type="text" placeholder="Address line 2">
+        <input class="input" type="text" placeholder="City">
+        <input class="input" type="text" placeholder="Postcode">
+        <select class="input">
+          <option value="" disabled selected>Select country</option>
+          <option>United Kingdom</option><option>Ireland</option>
+        </select>
+      </div>
+    </div>
+    <div class="bottom-actions">
+      <button class="btn-primary" onclick="go('verify-identity')">Continue</button>
+      <button class="btn-outline" onclick="goBack('personal-details')">Back</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ 04 VERIFY IDENTITY ══════════════════════ -->
+  <div id="verify-identity" class="screen">
+    <div class="status-bar"><span></span><span>▌▌ ■■</span></div>
+    <div class="progress-dots">
+      <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div>
+      <div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+    <div class="content">
+      <div class="content-inner">
+        <h1>Verify Your Identity</h1>
+        <p class="subtitle" style="margin-bottom:16px">We need to verify your identity to comply with regulations.</p>
+        <div class="info-banner">Please provide a government-issued photo ID and a selfie. All documents are encrypted and stored securely.</div>
+        <div class="upload-card" onclick="this.style.borderColor='#4ADE80'">
+          <div class="upload-label">[ ID ]</div>
+          <div class="upload-title">Upload ID Document</div>
+          <div class="upload-sub">Passport, driving licence or national ID</div>
+        </div>
+        <div class="upload-card" onclick="this.style.borderColor='#4ADE80'">
+          <div class="upload-label">[ PHOTO ]</div>
+          <div class="upload-title">Upload Selfie</div>
+          <div class="upload-sub">Take or upload a clear photo of your face</div>
+        </div>
+        <p style="font-size:12px;color:#E8EDF5;margin-top:4px;line-height:1.5">Your data is protected under our Privacy Policy and will only be used for identity verification.</p>
+      </div>
+    </div>
+    <div class="bottom-actions">
+      <button class="btn-primary" onclick="go('responsible-gambling')">Continue</button>
+      <button class="btn-outline" onclick="goBack('contact-details')">Back</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════ 05 RESPONSIBLE GAMBLING ═══════════════════ -->
+  <div id="responsible-gambling" class="screen">
+    <div class="status-bar"><span></span><span>▌▌ ■■</span></div>
+    <div class="progress-dots">
+      <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div>
+      <div class="dot done"></div><div class="dot active"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+    <div class="content">
+      <div class="content-inner">
+        <h1>Responsible Gambling</h1>
+        <p class="subtitle" style="margin-bottom:16px">Set your limits to help stay in control of your gambling.</p>
+        <div class="info-banner">Setting deposit limits is optional but recommended. You can update these at any time in your account settings.</div>
+        <input class="input" type="text" placeholder="Daily deposit limit (£)">
+        <input class="input" type="text" placeholder="Weekly deposit limit (£)">
+        <input class="input" type="text" placeholder="Monthly deposit limit (£)">
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-title">Session Reminders</div>
+            <div class="toggle-sub">Get reminded after 1 hour of play</div>
+          </div>
+          <div class="toggle" onclick="this.classList.toggle('off')"></div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-actions">
+      <button class="btn-primary" onclick="go('review-confirm')">Continue</button>
+      <button class="btn-outline" onclick="goBack('verify-identity')">Back</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ 06 REVIEW & CONFIRM ══════════════════════ -->
+  <div id="review-confirm" class="screen">
+    <div class="status-bar"><span></span><span>▌▌ ■■</span></div>
+    <div class="progress-dots">
+      <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div>
+      <div class="dot done"></div><div class="dot done"></div><div class="dot active"></div><div class="dot"></div>
+    </div>
+    <div class="content">
+      <div class="content-inner">
+        <h1>Review & Confirm</h1>
+        <p class="subtitle" style="margin-bottom:16px">Please review your details before creating your account.</p>
+        <div class="review-table">
+          <div class="review-row"><span class="review-key">Email</span><span class="review-val">user@example.com</span></div>
+          <div class="review-row"><span class="review-key">Name</span><span class="review-val">John Smith</span></div>
+          <div class="review-row"><span class="review-key">Date of Birth</span><span class="review-val">01/01/1990</span></div>
+          <div class="review-row"><span class="review-key">Mobile</span><span class="review-val">+44 7700 900000</span></div>
+          <div class="review-row"><span class="review-key">Address</span><span class="review-val">London, UK</span></div>
+        </div>
+        <div class="checkbox-row">
+          <div class="checkbox" onclick="this.classList.toggle('checked')"></div>
+          <span class="checkbox-label">I confirm my details are correct</span>
+        </div>
+        <div class="checkbox-row">
+          <div class="checkbox" onclick="this.classList.toggle('checked')"></div>
+          <span class="checkbox-label">I agree to the <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a></span>
+        </div>
+        <div class="checkbox-row">
+          <div class="checkbox checked" onclick="this.classList.toggle('checked')"></div>
+          <span class="checkbox-label">I confirm I am 18 or over and a UK resident</span>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-actions">
+      <button class="btn-primary" onclick="go('verify-email')">Create My Account</button>
+      <button class="btn-outline" onclick="goBack('responsible-gambling')">Back</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ 07 VERIFY EMAIL ══════════════════════════ -->
+  <div id="verify-email" class="screen">
+    <div class="status-bar"><span></span><span>▌▌ ■■</span></div>
+    <div class="progress-dots">
+      <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div>
+      <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot active"></div>
+    </div>
+    <div class="email-icon-wrap">
+      <div class="email-icon">@</div>
+    </div>
+    <div style="text-align:center;padding:0 24px;flex:1">
+      <h1 style="margin-bottom:10px">Verify Your Email</h1>
+      <p style="font-size:14px;color:#E8EDF5;margin-bottom:6px">We've sent a verification code to</p>
+      <p style="font-size:15px;font-weight:600;color:#F8FAFC;margin-bottom:4px">user@example.com</p>
+      <div class="otp-row">
+        <input class="otp-box" maxlength="1" type="text">
+        <input class="otp-box" maxlength="1" type="text">
+        <input class="otp-box" maxlength="1" type="text">
+        <input class="otp-box" maxlength="1" type="text">
+        <input class="otp-box" maxlength="1" type="text">
+        <input class="otp-box" maxlength="1" type="text">
+      </div>
+      <div class="footer-link">Didn't receive a code? <span>Resend email</span></div>
+    </div>
+    <div class="bottom-actions">
+      <button class="btn-primary" onclick="go('welcome-in')">Verify &amp; Enter</button>
+      <button class="btn-outline" onclick="goBack('review-confirm')">Back</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════ WELCOME IN ═════════════════════════════ -->
+  <div id="welcome-in" class="screen" style="background-image:url('./images/generated-1774277112968.png');background-size:cover;background-position:center;">
+    <div class="bg-overlay"></div>
+    <div class="screen-fg">
+      <div class="status-bar"><span>9:41</span><span>▌▌ ■■ ▮</span></div>
+      <div class="tour-progress" style="margin-top:10px"><div class="tour-progress-fill" style="width:16%"></div></div>
+      <div class="tour-content">
+        <div class="icon-box">✓</div>
+        <h1>You're In! 🎉</h1>
+        <p style="font-size:17px;font-weight:600;color:#F8FAFC;margin-bottom:12px">Welcome to BetMax, [Name]</p>
+        <p style="font-size:14px;color:#E8EDF5;line-height:1.6">Your account is all set up. Let us give you a quick tour of everything you can do right here in the app.</p>
+      </div>
+      <div class="bottom-actions">
+        <button class="btn-primary" onclick="go('tour-sports')">Show Me Around</button>
+        <button class="btn-outline" onclick="goBack('verify-email')">Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ TOUR 1 — SPORTS BETTING ══════════════════════ -->
+  <div id="tour-sports" class="screen" style="background-image:url('./images/generated-1774277139255.png');background-size:cover;background-position:center;">
+    <div class="bg-overlay"></div>
+    <div class="screen-fg">
+      <div class="status-bar"><span>9:41</span><span>▌▌ ■■ ▮</span></div>
+      <div class="tour-progress" style="margin-top:10px"><div class="tour-progress-fill" style="width:33%"></div></div>
+      <div class="tour-content">
+        <div class="icon-box">🏆</div>
+        <h1>Place Your First Bet</h1>
+        <p style="font-size:17px;font-weight:600;color:#F8FAFC;margin-bottom:12px">Sports betting is right here</p>
+        <p style="font-size:14px;color:#E8EDF5;line-height:1.6">Head to the Sports section to browse live and upcoming events across football, horse racing, tennis, basketball and loads more. Tap any market to build your bet slip in seconds.</p>
+        <div class="tour-tip">
+          <span class="tour-tip-icon">📍</span>
+          <span>Try the Acca Builder to combine multiple selections for bigger returns.</span>
+        </div>
+      </div>
+      <div class="bottom-actions">
+        <button class="btn-primary" onclick="go('tour-casino')">Next</button>
+        <button class="btn-outline" onclick="goBack('welcome-in')">Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════ TOUR 2 — CASINO ════════════════════════════ -->
+  <div id="tour-casino" class="screen" style="background-image:url('./images/generated-1774277167093.png');background-size:cover;background-position:center;">
+    <div class="bg-overlay"></div>
+    <div class="screen-fg">
+      <div class="status-bar"><span>9:41</span><span>▌▌ ■■ ▮</span></div>
+      <div class="tour-progress" style="margin-top:10px"><div class="tour-progress-fill" style="width:50%"></div></div>
+      <div class="tour-content">
+        <div class="icon-box">🎰</div>
+        <h1>Hit the Casino</h1>
+        <p style="font-size:17px;font-weight:600;color:#F8FAFC;margin-bottom:12px">Over 1,000 games at your fingertips</p>
+        <p style="font-size:14px;color:#E8EDF5;line-height:1.6">Tap Casino in the menu to browse slots, table games and live dealer rooms. Filter by category or search for your favourite game — it's all there waiting for you.</p>
+        <div class="tour-tip">
+          <span class="tour-tip-icon">📍</span>
+          <span>New to live dealer? Try Live Blackjack — it's easier than you think.</span>
+        </div>
+      </div>
+      <div class="bottom-actions">
+        <button class="btn-primary" onclick="go('tour-promotions')">Next</button>
+        <button class="btn-outline" onclick="goBack('tour-sports')">Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ TOUR 3 — PROMOTIONS ══════════════════════════ -->
+  <div id="tour-promotions" class="screen" style="background-image:url('./images/generated-1774277207444.png');background-size:cover;background-position:center;">
+    <div class="bg-overlay"></div>
+    <div class="screen-fg">
+      <div class="status-bar"><span>9:41</span><span>▌▌ ■■ ▮</span></div>
+      <div class="tour-progress" style="margin-top:10px"><div class="tour-progress-fill" style="width:66%"></div></div>
+      <div class="tour-content">
+        <div class="icon-box">🎁</div>
+        <h1>Your Bonuses Are Waiting</h1>
+        <p style="font-size:17px;font-weight:600;color:#F8FAFC;margin-bottom:12px">Don't leave free bets on the table</p>
+        <p style="font-size:14px;color:#E8EDF5;line-height:1.6">Visit the Promotions page to claim your welcome offer and see what's on today. Free bets, cashback and prize draws are added regularly — check back often.</p>
+        <div class="tour-tip">
+          <span class="tour-tip-icon">📍</span>
+          <span>Your welcome bonus is ready to claim — tap Promotions now to grab it.</span>
+        </div>
+      </div>
+      <div class="bottom-actions">
+        <button class="btn-primary" onclick="go('tour-account')">Next</button>
+        <button class="btn-outline" onclick="goBack('tour-casino')">Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════ TOUR 4 — MY ACCOUNT ════════════════════════ -->
+  <div id="tour-account" class="screen" style="background-image:url('./images/generated-1774277237537.png');background-size:cover;background-position:center;">
+    <div class="bg-overlay"></div>
+    <div class="screen-fg">
+      <div class="status-bar"><span>9:41</span><span>▌▌ ■■ ▮</span></div>
+      <div class="tour-progress" style="margin-top:10px"><div class="tour-progress-fill" style="width:83%"></div></div>
+      <div class="tour-content">
+        <div class="icon-box">👤</div>
+        <h1>Everything in One Place</h1>
+        <p style="font-size:17px;font-weight:600;color:#F8FAFC;margin-bottom:12px">Your account, your way</p>
+        <p style="font-size:14px;color:#E8EDF5;line-height:1.6">In My Account you can manage your deposits and withdrawals, check your bet history, set responsible gambling limits and update your preferences anytime.</p>
+        <div class="tour-tip">
+          <span class="tour-tip-icon">📍</span>
+          <span>Set a deposit limit now to stay in control of your spending.</span>
+        </div>
+      </div>
+      <div class="bottom-actions">
+        <button class="btn-primary" onclick="go('lets-go')">Next</button>
+        <button class="btn-outline" onclick="goBack('tour-promotions')">Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════ LET'S GO ══════════════════════════════ -->
+  <div id="lets-go" class="screen" style="background-image:url('./images/generated-1774277263592.png');background-size:cover;background-position:center;">
+    <div class="bg-overlay"></div>
+    <div class="screen-fg">
+      <div class="status-bar"><span>9:41</span><span>▌▌ ■■ ▮</span></div>
+      <div class="tour-progress" style="margin-top:10px"><div class="tour-progress-fill" style="width:100%"></div></div>
+      <div class="tour-content">
+        <div class="icon-box">🚀</div>
+        <h1>Let's Go! 🚀</h1>
+        <p style="font-size:17px;font-weight:600;color:#F8FAFC;margin-bottom:12px">The fun starts now</p>
+        <p style="font-size:14px;color:#E8EDF5;line-height:1.6">You know where everything is. Jump straight in — your first bet, your first spin, or grab that welcome bonus. It's all yours.</p>
+      </div>
+      <div class="bottom-actions">
+        <button class="btn-primary" onclick="go('homepage')">Go to Home</button>
+        <button class="btn-outline" onclick="go('homepage')">Explore Sports</button>
+        <button class="btn-outline" onclick="goBack('tour-account')">Back</button>
+        <div class="footer-link" style="margin-top:4px">Need help? Visit our <span>Help Centre</span> anytime</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════ MY ACCOUNT ════════════════════════════ -->
+  <div id="my-account" class="screen">
+    <div class="status-bar"><span>9:41</span><span>▌▌ ■■ ▮</span></div>
+    <div class="app-header">
+      <button class="header-icon back-btn" onclick="go('homepage')" style="width:36px;height:36px;background:#1C1F2A;border-radius:10px;font-size:16px;">‹</button>
+      <span class="header-title">My Account</span>
+      <div style="width:38px;"></div>
+    </div>
+
+    <div class="account-scroll">
+      <div class="account-hero">
+        <div class="account-avatar">JD</div>
+        <div>
+          <div class="account-hero-name">James Davies</div>
+          <div class="account-hero-email">james.davies@email.com</div>
+        </div>
+        <div class="account-hero-badge">Verified ✓</div>
+      </div>
+
+      <div class="account-section-label">Wallet</div>
+      <div class="account-menu">
+        <div class="account-menu-item">
+          <div class="account-menu-icon icon-green">💳</div>
+          <div class="account-menu-text">
+            <div class="account-menu-title">Deposit</div>
+            <div class="account-menu-sub">Add funds to your account</div>
+          </div>
+          <div class="account-menu-arrow">›</div>
+        </div>
+        <div class="account-menu-item">
+          <div class="account-menu-icon icon-blue">🏦</div>
+          <div class="account-menu-text">
+            <div class="account-menu-title">Withdraw</div>
+            <div class="account-menu-sub">Transfer to your bank</div>
+          </div>
+          <div class="account-menu-arrow">›</div>
+        </div>
+        <div class="account-menu-item">
+          <div class="account-menu-icon icon-purple">📋</div>
+          <div class="account-menu-text">
+            <div class="account-menu-title">Transaction History</div>
+            <div class="account-menu-sub">Deposits, withdrawals &amp; bets</div>
+          </div>
+          <div class="account-menu-arrow">›</div>
+        </div>
+      </div>
+
+      <div class="account-section-label">Betting</div>
+      <div class="account-menu">
+        <div class="account-menu-item">
+          <div class="account-menu-icon icon-amber">🏆</div>
+          <div class="account-menu-text">
+            <div class="account-menu-title">Bet History</div>
+            <div class="account-menu-sub">Open &amp; settled bets</div>
+          </div>
+          <span class="account-menu-tag">3 open</span>
+          <div class="account-menu-arrow" style="margin-left:8px;">›</div>
+        </div>
+      </div>
+
+      <div class="account-section-label">Responsible Gambling</div>
+      <div class="account-menu">
+        <div class="account-menu-item">
+          <div class="account-menu-icon icon-green">🛡</div>
+          <div class="account-menu-text">
+            <div class="account-menu-title">Deposit Limits</div>
+            <div class="account-menu-sub">Daily, weekly &amp; monthly caps</div>
+          </div>
+          <div class="account-menu-arrow">›</div>
+        </div>
+        <div class="account-menu-item">
+          <div class="account-menu-icon icon-amber">⏱</div>
+          <div class="account-menu-text">
+            <div class="account-menu-title">Time Reminders</div>
+            <div class="account-menu-sub">Session time alerts</div>
+          </div>
+          <div class="account-menu-arrow">›</div>
+        </div>
+        <div class="account-menu-item">
+          <div class="account-menu-icon icon-red">⛔</div>
+          <div class="account-menu-text">
+            <div class="account-menu-title">Self Exclusion</div>
+            <div class="account-menu-sub">Take a break from betting</div>
+          </div>
+          <div class="account-menu-arrow">›</div>
+        </div>
+      </div>
+
+      <div class="account-section-label">Profile</div>
+      <div class="account-menu">
+        <div class="account-menu-item">
+          <div class="account-menu-icon icon-blue">👤</div>
+          <div class="account-menu-text">
+            <div class="account-menu-title">Personal Details</div>
+            <div class="account-menu-sub">Name, address, date of birth</div>
+          </div>
+          <div class="account-menu-arrow">›</div>
+        </div>
+        <div class="account-menu-item">
+          <div class="account-menu-icon icon-grey">🔔</div>
+          <div class="account-menu-text">
+            <div class="account-menu-title">Notifications</div>
+            <div class="account-menu-sub">Emails, push &amp; SMS</div>
+          </div>
+          <div class="account-menu-arrow">›</div>
+        </div>
+        <div class="account-menu-item">
+          <div class="account-menu-icon icon-grey">🔒</div>
+          <div class="account-menu-text">
+            <div class="account-menu-title">Security</div>
+            <div class="account-menu-sub">Password &amp; two-factor auth</div>
+          </div>
+          <div class="account-menu-arrow">›</div>
+        </div>
+      </div>
+
+      <button class="account-signout">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════ HOMEPAGE ═══════════════════════════════ -->
+  <div id="homepage" class="screen">
+
+    <!-- Nav overlay -->
+    <div class="nav-overlay" id="navOverlay" onclick="closeNav(event)">
+      <div class="nav-panel" id="navPanel">
+        <div class="nav-header">
+          <span class="nav-brand">BetMax</span>
+          <button class="nav-close" onclick="closeNav()">✕</button>
+        </div>
+        <div class="nav-items">
+          <div class="nav-item active"><span class="nav-item-icon">⌂</span>Home</div>
+          <div class="nav-item"><span class="nav-item-icon">⚽</span>Sports</div>
+          <div class="nav-item"><span class="nav-item-icon">🎰</span>Casino</div>
+          <div class="nav-item"><span class="nav-item-icon">🎁</span>Promotions</div>
+          <div class="nav-item" onclick="go('my-account')"><span class="nav-item-icon">👤</span>My Account</div>
+        </div>
+        <div class="nav-footer">
+          <div class="nav-footer-item"><span>ℹ</span> Help Centre</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-bar"><span>9:41</span><span>▌▌ ■■ ▮</span></div>
+    <div class="app-header">
+      <button class="header-icon" onclick="openNav()">☰</button>
+      <span class="header-title">BetMax</span>
+      <button class="header-icon">🔔</button>
+    </div>
+
+    <div class="homepage-scroll">
+      <div class="greeting-section">
+        <div class="greeting-title">Good morning, [Name] 👋</div>
+        <div class="greeting-sub">Ready to make it interesting?</div>
+      </div>
+
+      <div class="section-label">Sports Betting</div>
+      <div class="home-card card-sports card-glow-sports">
+        <div class="home-card-inner">
+          <div class="home-card-icon">⚽</div>
+          <div class="home-card-title">Place Your Bet</div>
+          <div class="home-card-sub">Football · Horse Racing · Tennis · More</div>
+          <div class="home-card-cta">Bet Now →</div>
+        </div>
+      </div>
+
+      <div class="section-label">Casino &amp; Slots</div>
+      <div class="home-card card-casino card-glow-casino">
+        <div class="home-card-inner">
+          <div class="home-card-icon">🎰</div>
+          <div class="home-card-title">1,000+ Games Waiting</div>
+          <div class="home-card-sub">Slots · Live Dealer · Table Games</div>
+          <div class="home-card-cta">Play Now →</div>
+        </div>
+      </div>
+
+      <div class="section-label">Promotions</div>
+      <div class="home-card card-promo card-glow-promo">
+        <div class="home-card-inner">
+          <div class="home-card-icon">🎁</div>
+          <div class="home-card-title">Your Welcome Bonus Is Ready</div>
+          <div class="home-card-sub">Free bets, cashback &amp; prize draws waiting</div>
+          <div class="home-card-cta">Claim Now →</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="proto-label">BetMax Prototype · Click to navigate</div>
+
+<script>
+  function go(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active', 'back'));
+    document.getElementById(id).classList.add('active');
+    // Close nav if open
+    document.getElementById('navOverlay').classList.remove('open');
+    document.getElementById('navPanel').classList.remove('open');
+  }
+
+  function goBack(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active', 'back'));
+    const screen = document.getElementById(id);
+    screen.classList.add('active', 'back');
+  }
+
+  function openNav() {
+    document.getElementById('navOverlay').classList.add('open');
+    document.getElementById('navPanel').classList.add('open');
+  }
+
+  function closeNav(e) {
+    if (!e || e.target === document.getElementById('navOverlay')) {
+      document.getElementById('navOverlay').classList.remove('open');
+      document.getElementById('navPanel').classList.remove('open');
+    }
+  }
+
+  // OTP: auto-advance between boxes
+  document.querySelectorAll('.otp-box').forEach((box, i, all) => {
+    box.addEventListener('input', () => {
+      if (box.value && i < all.length - 1) all[i + 1].focus();
+    });
+    box.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !box.value && i > 0) all[i - 1].focus();
+    });
+  });
+</script>
+</body>
+</html>
