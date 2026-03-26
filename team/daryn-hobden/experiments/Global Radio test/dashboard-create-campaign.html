@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AdPower — Create a New Campaign</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue-900: #060E1D;
+      --blue-800: #0A1628;
+      --blue-700: #0046C7;
+      --blue-600: #1E40AF;
+      --blue-400: #3B5BDB;
+      --blue-200: #B7CDFF;
+      --blue-100: #E1EDFF;
+      --blue-50:  #F2F7FF;
+      --slate-900: #0B0F14;
+      --slate-600: #475569;
+      --slate-500: #64748B;
+      --slate-400: #94A3B8;
+      --slate-300: #CBD5E1;
+      --slate-200: #E2E8F0;
+      --slate-100: #F1F5F9;
+      --slate-50:  #F8FAFC;
+      --green-100: #D1FAE5;
+      --green-300: #6EE7B7;
+      --green-700: #047857;
+      --amber-100: #FEF3C7;
+      --amber-300: #FDE68A;
+      --amber-700: #B45309;
+      --white: #FFFFFF;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--slate-50);
+      color: var(--slate-900);
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    .nav {
+      background: var(--blue-900);
+      padding: 0 32px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 2px; }
+    .nav-logo .ad  { color: var(--blue-400); font-size: 13px; font-weight: 700; letter-spacing: 0.5px; }
+    .nav-logo .pw  { color: var(--white);    font-size: 13px; font-weight: 700; letter-spacing: 0.5px; }
+    .nav-links { display: flex; gap: 8px; }
+    .nav-links a {
+      color: #8BA0C4;
+      font-size: 13px;
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      transition: color 0.15s;
+    }
+    .nav-links a:hover { color: var(--white); }
+    .nav-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--blue-400);
+      color: var(--white); font-size: 13px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      background: var(--blue-900);
+      padding: 32px 32px 28px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .page-header h1 {
+      color: var(--white);
+      font-size: 28px; font-weight: 700; letter-spacing: -0.5px;
+    }
+    .page-header p {
+      color: #8BA0C4;
+      font-size: 14px;
+    }
+
+    /* ── MAIN CONTENT ── */
+    .content {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 28px 32px 48px;
+      display: flex; flex-direction: column; gap: 24px;
+    }
+
+    /* ── BRIEFING BANNER ── */
+    .briefing-banner {
+      border-radius: 16px;
+      background: linear-gradient(135deg, #0046C7 0%, #1E40AF 50%, #060E1D 100%);
+      padding: 36px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+      overflow: hidden;
+      position: relative;
+      min-height: 200px;
+    }
+    .briefing-text { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+    .briefing-text h2 {
+      color: var(--white);
+      font-size: 24px; font-weight: 700; letter-spacing: -0.5px;
+    }
+    .briefing-text ul {
+      list-style: none;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .briefing-text ul li {
+      color: rgba(255,255,255,0.75);
+      font-size: 13px;
+      padding-left: 16px;
+      position: relative;
+    }
+    .briefing-text ul li::before {
+      content: '·';
+      position: absolute; left: 4px;
+      color: var(--blue-200);
+    }
+    .briefing-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.12);
+      border: 1.5px solid rgba(255,255,255,0.25);
+      color: var(--white);
+      font-size: 12px; font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 9999px;
+      cursor: pointer;
+      width: fit-content;
+      transition: background 0.15s;
+      text-decoration: none;
+    }
+    .briefing-btn:hover { background: rgba(255,255,255,0.2); }
+    .briefing-img {
+      flex-shrink: 0;
+      width: 280px; height: 200px;
+      border-radius: 12px 12px 0 0;
+      object-fit: cover;
+      align-self: flex-end;
+      opacity: 0.9;
+    }
+
+    /* ── CREATIVE CARDS ── */
+    .creative-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .creative-card {
+      background: var(--white);
+      border: 1.5px solid var(--slate-200);
+      border-radius: 10px;
+      padding: 0;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+    .creative-card:hover {
+      border-color: var(--blue-700);
+      box-shadow: 0 0 0 3px var(--blue-100);
+    }
+    .creative-card.selected {
+      border-color: var(--blue-700);
+      box-shadow: 0 0 0 3px var(--blue-100);
+    }
+    .creative-card-img {
+      width: 100%; height: 140px;
+      object-fit: cover;
+      display: block;
+    }
+    .creative-card-body {
+      padding: 20px 20px 24px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .creative-card-top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+    }
+    .radio-btn {
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 2px solid var(--slate-300);
+      flex-shrink: 0;
+      margin-top: 2px;
+      position: relative;
+    }
+    .radio-btn.checked { border-color: var(--blue-700); }
+    .radio-btn.checked::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--blue-700);
+    }
+    .creative-badge {
+      font-size: 11px; font-weight: 600;
+      color: var(--blue-700);
+      background: var(--blue-100);
+      padding: 3px 10px;
+      border-radius: 9999px;
+    }
+    .creative-card-body h3 { font-size: 15px; font-weight: 600; color: var(--slate-900); margin-top: 4px; }
+    .creative-card-body p  { font-size: 12.5px; color: var(--slate-500); line-height: 1.5; }
+    .creative-card-meta { font-size: 11.5px; color: var(--slate-400); margin-top: 4px; }
+
+    /* ── STAT BANNERS ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .stat-card {
+      border-radius: 10px;
+      padding: 24px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .stat-card.light {
+      background: var(--slate-100);
+      border: 1px solid var(--slate-200);
+    }
+    .stat-card.dark {
+      background: linear-gradient(135deg, #0046C7 0%, #1E40AF 50%, #060E1D 100%);
+    }
+    .stat-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; font-weight: 500;
+    }
+    .stat-card.light .stat-label { color: var(--slate-600); }
+    .stat-card.dark  .stat-label { color: rgba(255,255,255,0.7); }
+    .stat-icon {
+      width: 20px; height: 20px;
+      background: var(--blue-100);
+      border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+    }
+    .stat-card.dark .stat-icon { background: rgba(255,255,255,0.15); }
+    .stat-toggle {
+      margin-left: auto;
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px;
+    }
+    .stat-card.light .stat-toggle { color: var(--slate-500); }
+    .stat-card.dark  .stat-toggle { color: rgba(255,255,255,0.6); }
+    .toggle {
+      width: 32px; height: 18px; border-radius: 9999px;
+      position: relative; cursor: pointer;
+    }
+    .toggle.on  { background: var(--green-300); }
+    .toggle.off { background: var(--slate-300); }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--white);
+      top: 3px;
+      transition: left 0.15s;
+    }
+    .toggle.on::after  { left: 17px; }
+    .toggle.off::after { left: 3px; }
+    .stat-amount {
+      font-size: 34px; font-weight: 700; letter-spacing: -1px;
+    }
+    .stat-card.light .stat-amount { color: var(--slate-900); }
+    .stat-card.dark  .stat-amount { color: var(--white); }
+    .stat-note {
+      font-size: 12px;
+    }
+    .stat-card.light .stat-note { color: var(--slate-500); }
+    .stat-card.dark  .stat-note { color: rgba(255,255,255,0.6); }
+    .stat-cta {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 9999px;
+      font-size: 12px; font-weight: 600;
+      width: fit-content; cursor: pointer;
+    }
+    .stat-card.light .stat-cta {
+      background: #FEF0C7; color: #92400E;
+      border: 1px solid #FDE68A;
+    }
+    .stat-card.dark .stat-cta {
+      background: var(--blue-100); color: var(--blue-600);
+      border: 1px solid var(--blue-200);
+    }
+
+    /* ── INFO ALERT ── */
+    .info-alert {
+      background: var(--blue-50);
+      border: 1px solid var(--blue-100);
+      border-radius: 8px;
+      padding: 14px 16px;
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    .alert-icon {
+      width: 20px; height: 20px; flex-shrink: 0;
+      background: var(--blue-100);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: var(--blue-700);
+      margin-top: 1px;
+    }
+    .alert-body { flex: 1; }
+    .alert-body strong { font-size: 13px; font-weight: 600; color: var(--slate-900); }
+    .alert-body p  { font-size: 12.5px; color: var(--slate-600); margin-top: 2px; line-height: 1.5; }
+    .alert-action {
+      font-size: 12px; font-weight: 600;
+      color: var(--blue-700);
+      background: none; border: none;
+      cursor: pointer; white-space: nowrap;
+      padding: 2px 0;
+      text-decoration: underline;
+    }
+    .alert-close {
+      color: var(--slate-400); font-size: 16px;
+      cursor: pointer; line-height: 1;
+      background: none; border: none;
+    }
+
+    /* ── FAQ ACCORDION ── */
+    .faq-section { display: flex; flex-direction: column; gap: 0; }
+    .faq-section h3 {
+      font-size: 16px; font-weight: 600;
+      color: var(--slate-900);
+      margin-bottom: 12px;
+    }
+    .faq-item {
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .faq-question {
+      width: 100%;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px;
+      background: var(--white);
+      font-size: 14px; font-weight: 500; color: var(--slate-900);
+      cursor: pointer; border: none;
+      text-align: left;
+      transition: background 0.15s;
+    }
+    .faq-question:hover { background: var(--slate-50); }
+    .faq-question.open { background: var(--blue-50); color: var(--blue-700); border-bottom: 1px solid var(--blue-100); }
+    .faq-chevron { font-size: 12px; color: var(--slate-400); transition: transform 0.2s; }
+    .faq-question.open .faq-chevron { transform: rotate(180deg); color: var(--blue-700); }
+    .faq-answer {
+      padding: 16px 20px;
+      font-size: 13.5px; color: var(--slate-600); line-height: 1.7;
+      background: var(--white);
+    }
+    .faq-answer.hidden { display: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .creative-cards { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: 1fr; }
+      .briefing-img { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-logo">
+      <span class="ad">AD</span><span class="pw">POWER</span>
+    </div>
+    <div class="nav-links">
+      <a href="#">My Campaigns</a>
+      <a href="#">Reports</a>
+      <a href="#">Help</a>
+    </div>
+    <div class="nav-avatar">R</div>
+  </nav>
+
+  <!-- PAGE HEADER -->
+  <header class="page-header">
+    <h1>Create a new campaign</h1>
+    <p>Choose how you'd like to advertise on radio</p>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="content">
+
+    <!-- BRIEFING BANNER -->
+    <div class="briefing-banner">
+      <div class="briefing-text">
+        <h2>Simple brilliant adverts</h2>
+        <ul>
+          <li>Create cutting-edge and pitch-perfect audio ads with just a few clicks</li>
+          <li>Save on production times</li>
+          <li>Edit and customise your ads</li>
+          <li>Give us a brief and our digital ad creator will do the rest</li>
+        </ul>
+        <a href="#" class="briefing-btn">
+          ✦ Quick guide to writing brilliant briefs
+        </a>
+      </div>
+      <img
+        class="briefing-img"
+        src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=560&q=80"
+        alt="Radio studio microphone"
+      />
+    </div>
+
+    <!-- CREATIVE OPTION CARDS -->
+    <div class="creative-cards">
+
+      <!-- Upload Own Files -->
+      <div class="creative-card">
+        <img
+          class="creative-card-img"
+          src="https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=560&q=80"
+          alt="Upload audio files"
+        />
+        <div class="creative-card-body">
+          <div class="creative-card-top">
+            <div class="radio-btn"></div>
+          </div>
+          <h3>Upload own files</h3>
+          <p>Upload your audio and outdoor files. Files must follow format guidelines.</p>
+          <p class="creative-card-meta">Earliest campaign start date: Next day</p>
+        </div>
+      </div>
+
+      <!-- AdCreator AI -->
+      <div class="creative-card selected">
+        <img
+          class="creative-card-img"
+          src="https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=560&q=80"
+          alt="AdCreator AI"
+        />
+        <div class="creative-card-body">
+          <div class="creative-card-top">
+            <div class="radio-btn checked"></div>
+          </div>
+          <h3>AdCreator</h3>
+          <p>Easily create outdoor and audio adverts for your campaign in realtime with AI.</p>
+          <p class="creative-card-meta">Earliest campaign start date: Next day</p>
+        </div>
+      </div>
+
+      <!-- Brief AdPower Studios -->
+      <div class="creative-card">
+        <img
+          class="creative-card-img"
+          src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=560&q=80"
+          alt="Brief AdPower Studios team"
+        />
+        <div class="creative-card-body">
+          <div class="creative-card-top">
+            <div class="radio-btn"></div>
+            <span class="creative-badge">From £750</span>
+          </div>
+          <h3>Brief AdPower Studios</h3>
+          <p>Brief AdPower's in-house team to craft the perfect ad for your campaign.</p>
+          <p class="creative-card-meta">Earliest campaign start date: 21 days from today</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- STAT BANNERS -->
+    <div class="stats-row">
+
+      <div class="stat-card light">
+        <div class="stat-label">
+          <div class="stat-icon">📻</div>
+          Media campaign cost
+          <div class="stat-toggle">
+            VAT <div class="toggle on"></div>
+          </div>
+        </div>
+        <div class="stat-amount">£10,000.00</div>
+        <div class="stat-note">Your final plan will not be more expensive than the price shown plus VAT</div>
+        <div class="stat-cta">⚡ Not including £350 creative fee</div>
+      </div>
+
+      <div class="stat-card dark">
+        <div class="stat-label">
+          <div class="stat-icon">📻</div>
+          Media campaign cost
+          <div class="stat-toggle">
+            VAT <div class="toggle off"></div>
+          </div>
+        </div>
+        <div class="stat-amount">£10,000.00</div>
+        <div class="stat-note">Your final plan will not be more expensive than the price shown</div>
+        <div class="stat-cta">⚡ Not including £350 creative fee</div>
+      </div>
+
+    </div>
+
+    <!-- INFO ALERT -->
+    <div class="info-alert">
+      <div class="alert-icon">i</div>
+      <div class="alert-body">
+        <strong>Your creative assets need to be approved before going live</strong>
+        <p>Upload your audio files ahead of your campaign start date to allow time for review. Outdoor files require 5 working days.</p>
+      </div>
+      <button class="alert-action">Learn more</button>
+      <button class="alert-close">×</button>
+    </div>
+
+    <!-- FAQ ACCORDION -->
+    <div class="faq-section">
+      <h3>Frequently asked questions</h3>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          What audio formats can I upload?
+          <span class="faq-chevron">▼</span>
+        </button>
+        <div class="faq-answer hidden">
+          We accept MP3 and WAV files for audio ads. The file must be 30 seconds long for standard radio spots or 60 seconds for extended spots. Minimum bitrate of 192kbps is required. Stereo audio is preferred.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question open" onclick="toggleFaq(this)">
+          How does AdCreator AI work?
+          <span class="faq-chevron">▼</span>
+        </button>
+        <div class="faq-answer">
+          AdCreator uses generative AI to write and produce your radio ad in real time. Simply enter a brief describing your business, your offer, and your audience. The AI will generate a script and produce a voiceover within minutes. You can listen back, edit the script, and regenerate as many times as you like before approving.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          How long does briefing AdPower Studios take?
+          <span class="faq-chevron">▼</span>
+        </button>
+        <div class="faq-answer hidden">
+          After submitting your brief, our creative team will be in touch within 2 working days to discuss your campaign. The full production process typically takes 14–21 days, which is why we recommend booking at least 3 weeks before your campaign start date.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          Sed do eiusmod tempor incididunt ut labore?
+          <span class="faq-chevron">▼</span>
+        </button>
+        <div class="faq-answer hidden">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    function toggleFaq(btn) {
+      const answer = btn.nextElementSibling;
+      const isOpen = btn.classList.contains('open');
+      btn.classList.toggle('open', !isOpen);
+      answer.classList.toggle('hidden', isOpen);
+    }
+  </script>
+
+</body>
+</html>
